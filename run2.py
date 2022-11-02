@@ -1,58 +1,46 @@
 # -*- coding: utf-8 -*-
-from contextlib import redirect_stdout
-from flask import Flask, render_template, jsonify, request
+from contextlib import redirect_stdout, redirect_stderr
 from functools import wraps
 from io import StringIO
 import json
 import logging
+import sys
 import threading
 import webview
 
-app = Flask(__name__)
+log = logging.getLogger(__name__)
 
-@app.route('/')
-def landing():
-    return ''
-
-def verify_token(function):
+def run_server_on_end(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
-        """
-        pass through wrapper
-        """
-        return function(*args, **kwargs)
-    # def wrapper(*args, **kwargs):
-    #     data = json.loads(request.data)
-    #     token = data.get('token')
-    #     if token == webview.token:
-    #         return function(*args, **kwargs)
-    #     else:
-    #         raise Exception('Authentication error')
-
+        ret = function(*args, **kwargs)
+        stdinout_server(*args, **kwargs)
     return wrapper
-
-def start_server():
-    stream = StringIO()
-    with redirect_stdout(stream):
-        app.run(host='0.0.0.0', port=17080)
-
-@app.route('/api/close', methods=['POST'])
-@verify_token
-def close():
-    webview.windows[0].destroy()
-    return jsonify({})
 
 def _not_steel_focus(window):
     from qtpy.QtCore import Qt
     view = window.gui.BrowserView.instances['master']
     view.setWindowFlag(Qt.WindowDoesNotAcceptFocus)
+    # for key, view in window.gui.BrowserView.instances.items():
+    #     if key == 'master':
+    #         view.setWindowFlag(Qt.WindowDoesNotAcceptFocus)
+
+def stdinout_server(window, *args, **kwargs):
+    while line := sys.stdin.readline():
+        if line.startswith('close'):
+            window.destroy()
+            return
+        else:
+            print('{"error": "Invalid Command"}')
 
 def show_image(window, imgpath):
+    # do not create a new window
+    # window = webview.create_window('', transparent=True, on_top=True, frameless=True, hidden=False)
     import time
     time.sleep(0.1)
     window.load_html(f'<img src="{imgpath}" alt=""/>')
     _not_steel_focus(window)
-    print('hoge')
+    stdinout_server(window)
 
 import urllib
 def get_youtube_id(value):
@@ -117,28 +105,30 @@ def show_youtube(window, url):
 
     import time
     time.sleep(0.1)
-    window.load_html(htmlcode)
-    _not_steel_focus(window)
+    stream = StringIO()
+    with redirect_stdout(stream):
+        with redirect_stderr(stream):
+            window.load_html(htmlcode)
+            _not_steel_focus(window)
+    stdinout_server(window)
 
 if __name__ == '__main__':
 
     fileHandler = logging.FileHandler("popupview.log")
+    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+    fileHandler.setFormatter(logFormatter)
     rootlogger = logging.getLogger()
     rootlogger.addHandler(fileHandler)
+    rootlogger.setLevel(logging.INFO)
     # consoleHandler = logging.StreamHandler()
     # consoleHandler.setFormatter(logFormatter)
     # rootlogger.addHandler(consoleHandler)
 
-    print(webview.token)
-
-    t = threading.Thread(target=start_server)
-    t.daemon = True
-    t.start()
+    print('{{"token": "{0}"}}'.format(webview.token))
 
     window = webview.create_window('', transparent=True, on_top=True, frameless=True, hidden=False)
-
     # show image
-    webview.start(show_image, [window, '/home/sifi/sandbox/popup_webview/Tux.jpg'], gui='qt')
+    # webview.start(show_image, [dummywindow, '/home/sifi/sandbox/popup_webview/Tux.jpg'], gui='qt')
 
     # show youtube
     webview.start(show_youtube, [window, 'https://www.youtube.com/watch?v=be_XkA6pEQc'], gui='qt')
