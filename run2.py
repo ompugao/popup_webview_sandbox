@@ -26,10 +26,25 @@ def _not_steel_focus(window):
     #         view.setWindowFlag(Qt.WindowDoesNotAcceptFocus)
 
 def stdinout_server(window, *args, **kwargs):
+    import time
+    time.sleep(1)
+    _not_steel_focus(window)
     while line := sys.stdin.readline():
         if line.startswith('close'):
             window.destroy()
             return
+        elif line.startswith('hide'):
+            window.hide()
+        elif line.startswith('show'):
+            window.show()
+        elif line.startswith('youtube'):
+            url = line[len('youtube '):]
+            show_youtube(window, url)
+            window.show()
+        elif line.startswith('image'):
+            path = line[len('image '):]
+            show_image(window, path)
+            window.show()
         else:
             print('{"error": "Invalid Command"}')
 
@@ -39,8 +54,6 @@ def show_image(window, imgpath):
     import time
     time.sleep(0.1)
     window.load_html(f'<img src="{imgpath}" alt=""/>')
-    _not_steel_focus(window)
-    stdinout_server(window)
 
 import urllib
 def get_youtube_id(value):
@@ -107,10 +120,7 @@ def show_youtube(window, url):
     time.sleep(0.1)
     stream = StringIO()
     with redirect_stdout(stream):
-        with redirect_stderr(stream):
-            window.load_html(htmlcode)
-            _not_steel_focus(window)
-    stdinout_server(window)
+        window.load_html(htmlcode)
 
 if __name__ == '__main__':
 
@@ -126,9 +136,12 @@ if __name__ == '__main__':
 
     print('{{"token": "{0}"}}'.format(webview.token))
 
-    window = webview.create_window('', transparent=True, on_top=True, frameless=True, hidden=False)
+    window = webview.create_window('', transparent=True, on_top=True, frameless=True, hidden=True)
     # show image
     # webview.start(show_image, [dummywindow, '/home/sifi/sandbox/popup_webview/Tux.jpg'], gui='qt')
 
     # show youtube
-    webview.start(show_youtube, [window, 'https://www.youtube.com/watch?v=be_XkA6pEQc'], gui='qt')
+    # webview.start(show_youtube, [window, 'https://www.youtube.com/watch?v=be_XkA6pEQc'], gui='qt')
+
+    # run server
+    webview.start(stdinout_server, window, gui='qt')
