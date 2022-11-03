@@ -4,7 +4,7 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_popupapp#System#Job#Vim#import() abort', printf("return map({'is_available': '', 'start': ''}, \"vital#_popupapp#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_popup_webview#System#Job#Vim#import() abort', printf("return map({'is_available': '', 'start': ''}, \"vital#_popup_webview#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 " https://github.com/neovim/neovim/blob/f629f83/src/nvim/event/process.c#L24-L26

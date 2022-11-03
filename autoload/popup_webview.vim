@@ -1,4 +1,4 @@
-let s:Job = vital#popupapp#import('System.Job')
+let s:Job = vital#popup_webview#import('System.Job')
 
 function! s:on_stdout(data) abort dict
 	let self.stdout[-1] .= a:data[0]
@@ -14,9 +14,9 @@ function! s:on_exit(exitval) abort dict
 	let self.exit_status = a:exitval
 endfunction
 
-function! popupapp#start() abort
+function! popup_webview#start() abort
 	if !exists('s:job')
-		let s:job = s:Job.start(['popupapp'], {
+		let s:job = s:Job.start(['popup_webview'], {
 					\ 'stdout': [''],
 					\ 'stderr': [''],
 					\ 'exit_status': -1,
@@ -27,27 +27,27 @@ function! popupapp#start() abort
 	endif
 endfunction
 
-function! popupapp#show_image(path) abort
-	call popupapp#start()
+function! popup_webview#show_image(path) abort
+	call popup_webview#start()
 	call s:job.send('image ' . a:path . "\n")
 endfunction
 
-function! popupapp#show_youtube(url) abort
-	call popupapp#start()
+function! popup_webview#show_youtube(url) abort
+	call popup_webview#start()
 	call s:job.send('youtube ' . a:url . "\n")
 endfunction
 
-function! popupapp#show() abort
-	call popupapp#start()
+function! popup_webview#show() abort
+	call popup_webview#start()
 	call s:job.send("show\n")
 endfunction
 
-function! popupapp#hide() abort
-	call popupapp#start()
+function! popup_webview#hide() abort
+	call popup_webview#start()
 	call s:job.send("hide\n")
 endfunction
 
-function! popupapp#stop() abort
+function! popup_webview#stop() abort
 	if exists('s:job')
 		" call s:job.send('close' . "\n")
 		call s:job.stop()

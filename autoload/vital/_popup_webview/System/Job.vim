@@ -4,7 +4,7 @@
 function! s:_SID() abort
   return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze__SID$')
 endfunction
-execute join(['function! vital#_popupapp#System#Job#import() abort', printf("return map({'_vital_depends': '', 'is_available': '', 'start': '', '_vital_loaded': ''}, \"vital#_popupapp#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
+execute join(['function! vital#_popup_webview#System#Job#import() abort', printf("return map({'_vital_depends': '', 'is_available': '', 'start': '', '_vital_loaded': ''}, \"vital#_popup_webview#function('<SNR>%s_' . v:key)\")", s:_SID()), 'endfunction'], "\n")
 delfunction s:_SID
 " ___vital___
 let s:t_string = type('')
