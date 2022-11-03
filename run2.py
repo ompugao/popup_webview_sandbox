@@ -45,15 +45,29 @@ def stdinout_server(window, *args, **kwargs):
             path = line[len('image '):]
             show_image(window, path)
             window.show()
+            print('{"message_type": "response", "code": 0, "data": null}')
         else:
-            print('{"error": "Invalid Command"}')
+            print('{"message_type": "response", "error": "Invalid Command"}')
 
 def show_image(window, imgpath):
     # do not create a new window
     # window = webview.create_window('', transparent=True, on_top=True, frameless=True, hidden=False)
     import time
     time.sleep(0.1)
-    window.load_html(f'<img src="{imgpath}" alt=""/>')
+    code = f'''
+    <html><head><style>
+    #imgcontainer {{
+        width: 100%;
+        // height: 100%;
+    }}
+    </style>
+    </head>
+    <body>
+    <img id="imgcontainer" src="{imgpath}" alt=""/>
+    </body>
+    </html>
+    '''
+    window.load_html(code)
 
 import urllib
 def get_youtube_id(value):
@@ -134,7 +148,7 @@ if __name__ == '__main__':
     # consoleHandler.setFormatter(logFormatter)
     # rootlogger.addHandler(consoleHandler)
 
-    print('{{"token": "{0}"}}'.format(webview.token))
+    print('{{"message_type": "notification", "token": "{0}"}}'.format(webview.token))
 
     window = webview.create_window('', transparent=True, on_top=True, frameless=True, hidden=True)
     # show image
