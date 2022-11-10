@@ -24,6 +24,10 @@ function! popup_webview#start() abort
 					\ 'on_stderr': function('s:on_stderr'),
 					\ 'on_exit': function('s:on_exit'),
 					\})
+		augroup popup_webview_closing
+			autocmd!
+			autocmd VimLeave * call popup_webview#stop()
+		augroup END
 	endif
 endfunction
 
